@@ -1,0 +1,127 @@
+
+#importing data, make sure to add lane number
+  qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path ./ \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path sequences.qza
+
+  #visualize demux sequences
+  qiime demux summarize \
+> --i-data othersequences.qza \
+> --o-visualization othersequences.qzv
+
+# view visualization
+qiime tools view sequences.qzv
+
+#quality control
+          qiime dada2 denoise-paired \
+            --i-demultiplexed-seqs sequences.qza \
+            --p-trunc-len-f 0 \
+            --p-trunc-len-r 0 \
+            --o-representative-sequences rep-seqs-dada2.qza \
+            --o-table table-dada2.qza \
+            --o-denoising-stats stats-dada2.qza
+
+  #Couldn't get it to work, so lets try deblur. This is just an importing step though.
+  #deblur worked!
+  qiime quality-filter q-score \
+ --i-demux sequences.qza \
+ --o-filtered-sequences demux-filtered.qza \
+ --o-filter-stats demux-filter-stats.qza
+
+ #visualize stats
+qiime metadata tabulate \
+--m-input-file demux-filter-stats.qza \
+--o-visualization demux-filter-stats.qzv
+
+
+#i'm not certain at what to trim, so i'ma go with 300
+qiime deblur denoise-16S \
+  --i-demultiplexed-seqs demux-filtered.qza \
+  --p-trim-length 300 \
+  --o-representative-sequences rep-seqs-deblur.qza \
+  --o-table table-deblur.qza \
+  --p-sample-stats \
+  --o-stats deblur-stats.qza
+
+  qiime deblur visualize-stats \
+  --i-deblur-stats deblur-stats.qza \
+  --o-visualization deblur-stats.qzv
+
+  #renaming so I can copy/paste from the tutorial
+mv rep-seqs-deblur.qza rep-seqs.qza
+mv table-deblur.qza table.qza
+
+#sequencing data visualization (need to make metadata file)
+  qiime feature-table summarize \
+ --i-table table.qza \
+ --o-visualization tableWithMetadata.qzv \
+ --m-sample-metadata-file /Users/King/Desktop/Sikes_research/qiime/code/output.tsv
+
+#linking sequences to BLAST database
+ qiime feature-table tabulate-seqs \
+--i-data rep-seqs.qza \
+--o-visualization rep-seqs.qzv
+
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny /panfs/pfs.local/work/kbs/j725k763/qza_files/rooted-tree.qza \
+  --i-table /panfs/pfs.local/work/kbs/j725k763/qza_files/table.qza \
+  --p-sampling-depth 449 \
+  --m-metadata-file /panfs/pfs.local/work/kbs/j725k763/qiime2_metadata.tsv \
+  --output-dir core-metrics-results
+
+  qiime diversity alpha-group-significance \
+
+  --m-metadata-file qiime2_metadata.tsv \
+  --i-alpha-diversity /panfs/pfs.local/work/kbs/j725k763/core-metrics-resultsls/faith_pd_vector.qza \
+
+qiime diversity alpha-group-significance \
+
+  --m-metadata-file qiime2_metadata.tsv \
+  --i-alpha-diversity /panfs/pfs.local/work/kbs/j725k763/core-metrics-resultsls/evenness_vector.qza \
+  --m-metadata-file qiime2_metadata.tsv \
+  --o-visualization /panfs/pfs.local/work/kbs/j725k763/core-metrics-resultsls/evenness-group-significance.qzv
+
+  qiime diversity beta-group-significance \
+  --i-distance-matrix /panfs/pfs.local/work/kbs/j725k763/core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /panfs/pfs.local/work/kbs/j725k763/qiime2_metadata.tsv \
+  --m-metadata-column sanmple location \
+  --o-visualization /panfs/pfs.local/work/kbs/j725k763/core-metrics-results/unweighted-unifrac-body-site-significance.qzv \
+  --p-pairwise
+
+F515 (5′-GTGCCAGCMGCCGCGGTAA-3′)”
+R806 (5′-GGACTACHVGGGTWTCTAAT-3′)
+
+pdated sequences: 515F (Parada)–806R (Apprill), forward-barcoded:
+FWD:GTGYCAGCMGCCGCGGTAA; REV:GGACTACNVGGGTWTCTAAT
+
+
+#taxonomic stuffs
+/home/j725k763/work/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna #reference sequences
+/home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt 
+
+qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path /home/j725k763/work/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna\
+  --output-path /home/j725k763/work/99_otus.qza
+
+  qiime tools import \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format HeaderlessTSVTaxonomyFormat \
+  --input-path /home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt  \
+  --output-path /home/j725k763/work/ref-taxonomy.qza
+## primers! 
+  515F - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG CCA GCM GCC GCG GTA A 3'
+  806R - 5' GTC TCG TGG GCT CGG AGA TGT GTA TAA GAG ACA GGG ACT ACH VGG GTW TCT AAT 3'
+
+  ITS4 - 5' GTC TCG TGG GCT CGG AGA TGT GTA TAA GAG ACA GCC TSC 3CTTANTDA TAT GC 3'
+  ITS7 - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG ART CAT CGA ATC TTT G 3'
+  qiime feature-classifier extract-reads \
+  --i-sequences /home/j725k763/work/99_otus.qza \
+  --p-f-primer \
+  --p-r-primer  \
+  --p-trunc-len 300 \
+  --p-min-length 100 \
+  --p-max-length 400 \
+  --o-reads ref-seqs.qza

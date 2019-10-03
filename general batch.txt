@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=others  
+#SBATCH --partition=kbs          
+#SBATCH --mail-type=END,FAIL          
+#SBATCH --mail-user=j725k763@ku.edu     
+#SBATCH --ntasks=1                    
+#SBATCH --mem=2GB                     
+#SBATCH --time=0-00:40:00             
+#SBATCH --output=others.log
+
+module load qiime2/2019.7 \
+
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path other_people_sequences/*.gz \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path other_people_sequences/others_sequences.qza \
+
+  qiime demux summarize \
+> --i-data /panfs/pfs.local/work/kbs/j725k763/other_people_sequences/others_sequences.qza \
+> --output-dir /panfs/pfs.local/work/kbs/j725k763/other_people_sequences/others_sequences.qzv
