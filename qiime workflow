@@ -38,7 +38,6 @@ qiime metadata tabulate \
 
 
 #i'm not certain at what to trim, so i'ma go with 300
-
 qiime deblur denoise-16S \
   --i-demultiplexed-seqs demux-filtered.qza \
   --p-trim-length 300 \
@@ -113,7 +112,6 @@ qiime tools import \
   --input-format HeaderlessTSVTaxonomyFormat \
   --input-path /home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt  \
   --output-path /home/j725k763/work/ref-taxonomy.qza
-
 ## primers! 
   515F - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG CCA GCM GCC GCG GTA A 3'
   806R - 5' GTC TCG TGG GCT CGG AGA TGT GTA TAA GAG ACA GGG ACT ACH VGG GTW TCT AAT 3'
