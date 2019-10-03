@@ -1,0 +1,23 @@
+#This is used in general whenever I'm copying and pasting something into a cluster text file. Will eventually be discarded.
+
+
+#!/bin/bash
+#SBATCH --job-name=feature_training  
+#SBATCH --partition=kbs          
+#SBATCH --mail-type=END,FAIL          
+#SBATCH --mail-user=j725k763@ku.edu     
+#SBATCH --ntasks=2                    
+#SBATCH --mem=4GB                     
+#SBATCH --time=0-00:40:00             
+#SBATCH --output=feature_training.log
+
+module load qiime2/2019.7 \
+
+qiime feature-classifier extract-reads \
+  --i-sequences /home/j725k763/work/99_otus.qza \
+  --p-f-primer GTGCCAGCMGCCGCGGTAA \
+  --p-r-primer  GGACTACHVGGGTWTCTAAT\
+  --p-trunc-len 300 \
+  --p-min-length 100 \
+  --p-max-length 400 \
+  --o-reads /home/j725k763/work/ref-seqs.qza

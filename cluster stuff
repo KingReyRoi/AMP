@@ -1,0 +1,83 @@
+#Viktoria's user name : v569s737
+ 
+ #uploading a file to server
+  scp /Users/King/Desktop/Sikes_research/test/qzv_qza/* j725k763@hpc.crc.ku.edu:/home/j725k763/work
+
+  #to submit batch
+  sbatch "batch_name.sh
+
+  #example interactive submit
+  srun --time=4:00:00 --ntasks=1 --nodes=1 --partition=sixhour --pty /bin/bash -l
+
+#Example of a batch 
+
+  #!/bin/bash
+#SBATCH --job-name=serial_job_test    # Job name
+#SBATCH --partition=sixhour           # Partition Name (Required)
+#SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=email@ku.edu      # Where to send mail	
+#SBATCH --ntasks=1                    # Run on a single CPU
+#SBATCH --mem=2gb                     # Job memory request
+#SBATCH --time=0-03:00:00             # Time limit days-hrs:min:sec
+#SBATCH --output= MetaDataTable.qza   # Standard output and error log
+
+#!/bin/bash
+#SBATCH --job-name=CoreMetrics  
+#SBATCH --partition=kbs          
+#SBATCH --mail-type=END,FAIL          
+#SBATCH --mail-user=j725k763@ku.edu     
+#SBATCH --ntasks=3                    
+#SBATCH --mem=4GB                     
+#SBATCH --time=0-00:40:00             
+#SBATCH --output=qiime2.log
+
+module load qiime2/2019.7 \
+
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny /panfs/pfs.local/work/kbs/j725k763/qza_files/rooted-tree.qza \
+  --i-table /panfs/pfs.local/work/kbs/j725k763/qza_files/table.qza \
+  --p-sampling-depth 449 \
+  --m-metadata-file /panfs/pfs.local/work/kbs/j725k763/qiime2_metadata.tsv \
+  --output-dir core-metrics-results
+
+
+#trying to fix a naming issue
+for f in *L001; do printf '%s\n' "${f%L001}L001_R1_001.fastq.gz"; done
+for f in *L001; do mv $f "${f%L001}L001_R2_001.fastq.gz"; done
+
+for f in *.gz; do mv $f ${f%.gz}q.gz; done
+
+for f in *_L001_L001_R1* ; do printf '%s\n' ".gz"; done
+
+
+mv -i 43226-Lpre-SI_S43_L001_L001_R1_001.fastq.gzL001_R1_001.fastq.gzL001_R1_001.fastq.gz 43226-Lpre-SI_S43_L001_L001_R1_001.fastq.gzL001_R1_001.fastq.gzL001_R1_
+
+for i in *L001_R1_001.fastq.gzL001_R1_001.fastq.gz; do mv -i "$i" "${i%????????????????????????????????????????}"; done
+
+for i in *_R2_001.fastq.gz ; do mv -i "$i" "${i%?????????????????????}"; done
+
+_L001_L001_R1_001.fastq.gz
+
+#interactive job
+
+srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs  qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path /home/j725k763/lswork/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna\
+  --output-path /home/j725k763/work/99_otus.qza
+
+srun --time=00:20:00 --ntasks=1 --nodes=1 --partition=kbs \
+  qiime tools import \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format HeaderlessTSVTaxonomyFormat \
+  --input-path /home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt  \
+  --output-path /home/j725k763/work/ref-taxonomy.qza
+
+  srun --time=00:20:00 --ntasks=1 --nodes=1 --partition=kbs \
+   qiime feature-classifier extract-reads \
+  --i-sequences /home/j725k763/work/99_otus.qza \
+  --p-f-primer GTGCCAGCMGCCGCGGTAA \
+  --p-r-primer  GGACTACHVGGGTWTCTAAT\
+  --p-trunc-len 300 \
+  --p-min-length 100 \
+  --p-max-length 400 \
+  --o-reads /home/j725k763/work/ref-seqs.qza
