@@ -18,8 +18,7 @@
 #SBATCH --mail-user=email@ku.edu      # Where to send mail	
 #SBATCH --ntasks=1                    # Run on a single CPU
 #SBATCH --mem=2gb                     # Job memory request
-#SBATCH --time=0-03:00:00             # Time limit days-hrs:min:sec
-#SBATCH --output= MetaDataTable.qza   # Standard output and error log
+#SBATCH --time=0-03:00:00             # Time limit days-he.qza   # Standard output and error log
 
 #!/bin/bash
 #SBATCH --job-name=CoreMetrics  
@@ -81,3 +80,15 @@ srun --time=00:20:00 --ntasks=1 --nodes=1 --partition=kbs \
   --p-min-length 100 \
   --p-max-length 400 \
   --o-reads /home/j725k763/work/ref-seqs.qza
+
+#Can't seem to get the training to work. Here's the error message that comes up.
+slurmstepd: error: Detected 2 oom-kill event(s) in step 5797748.0 cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: r11r30n03: task 0: Out Of Memory
+(qiime2-2019.7) [j725k763@submit2 scripts]$ 
+
+
+srun --time=00:20:00 --mem=8gb --partition=kbs \
+qiime feature-classifier fit-classifier-naive-bayes \
+  --i-reference-reads /home/j725k763/work/ref-seqs.qza \
+  --i-reference-taxonomy /home/j725k763/work/ref-taxonomy.qza \
+  --o-classifier /home/j725k763/workclassifier.qza
