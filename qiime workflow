@@ -6,13 +6,13 @@
   --input-format CasavaOneEightSingleLanePerSampleDirFmt \
   --output-path sequences.qza
 
-  #visualize demux sequences
+#visualize demux sequences
   qiime demux summarize \
-> --i-data othersequences.qza \
-> --o-visualization othersequences.qzv
+ --i-data othersequences.qza \
+ --o-visualization othersequences.qzv
 
 # view visualization
-qiime tools view sequences.qzv
+  qiime tools view sequences.qzv
 
 #quality control
   qiime dada2 denoise-paired \
@@ -31,14 +31,14 @@ qiime tools view sequences.qzv
  --o-filtered-sequences demux-filtered.qza \
  --o-filter-stats demux-filter-stats.qza
 
- #visualize stats
-qiime metadata tabulate \
---m-input-file demux-filter-stats.qza \
---o-visualization demux-filter-stats.qzv
+#visualize stats
+  qiime metadata tabulate \
+  --m-input-file demux-filter-stats.qza \
+  --o-visualization demux-filter-stats.qzv
 
 
 #i'm not certain at what to trim, so i'ma go with 300
-qiime deblur denoise-16S \
+  qiime deblur denoise-16S \
   --i-demultiplexed-seqs demux-filtered.qza \
   --p-trim-length 300 \
   --o-representative-sequences rep-seqs-deblur.qza \
@@ -50,9 +50,9 @@ qiime deblur denoise-16S \
   --i-deblur-stats deblur-stats.qza \
   --o-visualization deblur-stats.qzv
 
-  #renaming so I can copy/paste from the tutorial
-mv rep-seqs-deblur.qza rep-seqs.qza
-mv table-deblur.qza table.qza
+#renaming so I can copy/paste from the tutorial
+  mv rep-seqs-deblur.qza rep-seqs.qza
+  mv table-deblur.qza table.qza
 
 #sequencing data visualization (need to make metadata file)
   qiime feature-table summarize \
@@ -77,7 +77,7 @@ qiime diversity core-metrics-phylogenetic \
   --m-metadata-file qiime2_metadata.tsv \
   --i-alpha-diversity /panfs/pfs.local/work/kbs/j725k763/core-metrics-resultsls/faith_pd_vector.qza \
 
-qiime diversity alpha-group-significance \
+  qiime diversity alpha-group-significance \
 
   --m-metadata-file qiime2_metadata.tsv \
   --i-alpha-diversity /panfs/pfs.local/work/kbs/j725k763/core-metrics-resultsls/evenness_vector.qza \
@@ -91,18 +91,19 @@ qiime diversity alpha-group-significance \
   --o-visualization /panfs/pfs.local/work/kbs/j725k763/core-metrics-results/unweighted-unifrac-body-site-significance.qzv \
   --p-pairwise
 
-F515 (5′-GTGCCAGCMGCCGCGGTAA-3′)”
-R806 (5′-GGACTACHVGGGTWTCTAAT-3′)
+#primers
+  F515 (5′-GTGCCAGCMGCCGCGGTAA-3′)”
+  R806 (5′-GGACTACHVGGGTWTCTAAT-3′)
 
-pdated sequences: 515F (Parada)–806R (Apprill), forward-barcoded:
-FWD:GTGYCAGCMGCCGCGGTAA; REV:GGACTACNVGGGTWTCTAAT
+  updated sequences: 515F (Parada)–806R (Apprill), forward-barcoded:
+  FWD:GTGYCAGCMGCCGCGGTAA; REV:GGACTACNVGGGTWTCTAAT
 
 
 #taxonomic stuffs
-/home/j725k763/work/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna #reference sequences
-/home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt 
+  /home/j725k763/work/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna #reference sequences
+  /home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt 
 
-qiime tools import \
+  qiime tools import \
   --type 'FeatureData[Sequence]' \
   --input-path /home/j725k763/work/SILVA_132_QIIME_release/rep_set/rep_set_16S_only/99/silva_132_99_16S.fna\
   --output-path /home/j725k763/work/99_otus.qza
@@ -130,3 +131,17 @@ qiime tools import \
   --p-min-length 100 \
   --p-max-length 400 \
   --o-reads /home/j725k763/work/ref-seqs.qza
+
+  qiime feature-classifier fit-classifier-naive-bayes \
+  --i-reference-reads /home/j725k763/work/ref-seqs.qza \
+  --i-reference-taxonomy /home/j725k763/work/ref-taxonomy.qza \
+  --o-classifier /home/j725k763/workclassifier.qza
+
+  qiime feature-classifier classify-sklearn \
+  --i-classifier /home/j725k763/work/classifier.qza \
+  --i-reads /home/j725k763/work/qza_files/rep-seqs.qza \
+  --o-classification /home/j725k763/work/taxonomy.qza \
+
+  qiime metadata tabulate \
+  --m-input-file /home/j725k763/work/taxonomy.qza \
+  --o-visualization /home/j725k763/work/taxonomy.qzv
