@@ -87,7 +87,7 @@ qiime diversity core-metrics-phylogenetic \
   qiime diversity beta-group-significance \
   --i-distance-matrix /panfs/pfs.local/work/kbs/j725k763/core-metrics-results/unweighted_unifrac_distance_matrix.qza \
   --m-metadata-file /panfs/pfs.local/work/kbs/j725k763/qiime2_metadata.tsv \
-  --m-metadata-column sanmple location \
+  --m-metadata-column sample location \
   --o-visualization /panfs/pfs.local/work/kbs/j725k763/core-metrics-results/unweighted-unifrac-body-site-significance.qzv \
   --p-pairwise
 
@@ -145,3 +145,17 @@ qiime diversity core-metrics-phylogenetic \
   qiime metadata tabulate \
   --m-input-file /home/j725k763/work/taxonomy.qza \
   --o-visualization /home/j725k763/work/taxonomy.qzv
+
+
+#making new table with updated metadata
+   qiime feature-table summarize \
+ --i-table /home/j725k763/work/qza_files/table.qza \
+ --o-visualization table.10.7.qzv\
+ --m-sample-metadata-file /home/j725k763/work/metadata.tsv
+
+#taxa barplot
+qiime taxa barplot \
+  --i-table /home/j725k763/qza_files/table.qza\
+  --i-taxonomy /home/j725k763/work/taxonomy/taxonomy.qza \
+  --m-metadata-file /home/j725k763/work/metadata.tsv \
+  --o-visualization /home/j725k763/work/taxonomy/taxa-bar-plots.qzv

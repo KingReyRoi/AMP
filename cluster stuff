@@ -107,3 +107,18 @@ Used only 2 hours and 34.65GB of memory
   qiime metadata tabulate \
   --m-input-file /home/j725k763/work/taxonomy.qza \
   --o-visualization /home/j725k763/work/taxonomy.qzv
+
+#new tablew/metadata
+ srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
+qiime feature-table summarize \
+ --i-table /home/j725k763/work/qza_files/table.qza \
+ --o-visualization table.10.7.qzv\
+ --m-sample-metadata-file /home/j725k763/work/metadata.tsv
+
+#taxa barplot
+srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
+qiime taxa barplot \
+  --i-table /home/j725k763/work/qza_files/table.qza\
+  --i-taxonomy /home/j725k763/work/taxonomy/taxonomy.qza \
+  --m-metadata-file /home/j725k763/work/metadata.tsv \
+  --o-visualization /home/j725k763/work/taxonomy/taxa-bar-plots.qzv
