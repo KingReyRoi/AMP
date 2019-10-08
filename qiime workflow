@@ -175,7 +175,7 @@ qiime gneiss ilr-phylogenetic \
 --o-hierarchy /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza
 
 qiime gneiss balance-taxonomy \
---i-table /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylBalanceTable.qza \
+--i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza \
 --i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza \
 --i-taxonomy /Users/King/Desktop/Sikes_research/qiime/taxonomy/taxonomy.qza \
 --p-balance-name 'y0' \
