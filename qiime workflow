@@ -159,3 +159,27 @@ qiime taxa barplot \
   --i-taxonomy /home/j725k763/work/taxonomy/taxonomy.qza \
   --m-metadata-file /home/j725k763/work/metadata.tsv \
   --o-visualization /home/j725k763/work/taxonomy/taxa-bar-plots.qzv
+
+#Alpha rarefication Plotting
+qiime diversity alpha-rarefaction \
+  --i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza \
+  --i-phylogeny /Users/King/Desktop/Sikes_research/qiime/working-files/rooted-tree.qza \
+  --p-max-depth 1000 \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/code/Metadata.10.8.tsv\
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/alpha-rarefaction.10.8.qzv
+
+qiime gneiss ilr-phylogenetic \
+--i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza  \
+--i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/rooted-tree.qza \
+--o-balances /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylBalanceTable.qza \
+--o-hierarchy /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza
+
+qiime gneiss balance-taxonomy \
+--i-table /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylBalanceTable.qza \
+--i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza \
+--i-taxonomy /Users/King/Desktop/Sikes_research/qiime/taxonomy/taxonomy.qza \
+--p-balance-name 'y0' \
+--p-taxa-level 5 \
+--m-metadata-file /Users/King/Desktop/Sikes_research/qiime/working-files/Metadata.10.8.tsv \
+--m-metadata-column body_site \
+--o-visualization /Users/King/Desktop/Sikes_research/qiime/balance_body_site_tax.qzv
