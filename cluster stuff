@@ -7,7 +7,8 @@
   sbatch "batch_name.sh
 
 #example interactive submit
-  srun --time=4:00:00 --ntasks=1 --nodes=1 --partition=sixhour --pty /bin/bash -l
+  srun --time=00:30:00 --ntasks=4 --nodes=1 --partition=kbs --pty /bin/bash -l
+  module load qiime2/2019.7 \
 
 #Example of a batch 
 
@@ -122,3 +123,9 @@ qiime taxa barplot \
   --i-taxonomy /home/j725k763/work/taxonomy/taxonomy.qza \
   --m-metadata-file /home/j725k763/work/metadata.tsv \
   --o-visualization /home/j725k763/work/taxonomy/taxa-bar-plots.qzv
+
+#Starting again from scratch
+  srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
+  qiime demux summarize \
+  --i-data /home/j725k763/work/sequences.qza \
+  --o-visualization /home/j725k763/work/sequences.qzv

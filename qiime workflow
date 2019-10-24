@@ -14,6 +14,10 @@
 # view visualization
   qiime tools view sequences.qzv
 
+
+bacterial at 20%
+fungal at least 30% (but play with it)
+go with dada2
 #quality control
   qiime dada2 denoise-paired \
   --i-demultiplexed-seqs sequences.qza \
@@ -51,7 +55,7 @@
   --o-visualization deblur-stats.qzv
 
 #renaming so I can copy/paste from the tutorial
-  mv rep-seqs-deblur.qza rep-seqs.qza
+  mv rep-seqs-deblur.qza rep-se qs.qza
   mv table-deblur.qza table.qza
 
 #sequencing data visualization (need to make metadata file)
@@ -161,25 +165,33 @@ qiime taxa barplot \
   --o-visualization /home/j725k763/work/taxonomy/taxa-bar-plots.qzv
 
 #Alpha rarefication Plotting
-qiime diversity alpha-rarefaction \
+  qiime diversity alpha-rarefaction \
   --i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza \
   --i-phylogeny /Users/King/Desktop/Sikes_research/qiime/working-files/rooted-tree.qza \
   --p-max-depth 1000 \
   --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/code/Metadata.10.8.tsv\
   --o-visualization /Users/King/Desktop/Sikes_research/qiime/alpha-rarefaction.10.8.qzv
+#abundance metrics
+  qiime gneiss ilr-phylogenetic \
+  --i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza  \
+  --i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/rooted-tree.qza \
+  --o-balances /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylBalanceTable.qza \
+  --o-hierarchy /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza
 
-qiime gneiss ilr-phylogenetic \
---i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza  \
---i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/rooted-tree.qza \
---o-balances /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylBalanceTable.qza \
---o-hierarchy /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza
-
-qiime gneiss balance-taxonomy \
---i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza \
---i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza \
---i-taxonomy /Users/King/Desktop/Sikes_research/qiime/taxonomy/taxonomy.qza \
---p-balance-name 'y0' \
---p-taxa-level 5 \
---m-metadata-file /Users/King/Desktop/Sikes_research/qiime/working-files/Metadata.10.8.tsv \
---m-metadata-column body_site \
---o-visualization /Users/King/Desktop/Sikes_research/qiime/balance_body_site_tax.qzv
+  qiime gneiss balance-taxonomy \
+  --i-table /Users/King/Desktop/Sikes_research/qiime/working-files/table.qza \
+  --i-tree /Users/King/Desktop/Sikes_research/qiime/working-files/IlrPhylHierarchy.qza \
+  --i-taxonomy /Users/King/Desktop/Sikes_research/qiime/taxonomy/taxonomy.qza \
+  --p-balance-name 'y0' \
+  --p-taxa-level 5 \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/working-files/Metadata.10.8.tsv \
+  --m-metadata-column body_site \
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/balance_body_site_tax.qzv
+#longitudinal mixed efffects
+  qiime longitudinal linear-mixed-effects \
+  --m-metadata-file ecam-sample-metadata.tsv \
+  --p-metric shannon \
+  --p-group-columns delivery,diet,sex \
+  --p-state-column month \
+  --p-individual-id-column studyid \
+  --o-visualization linear-mixed-effects.qzv

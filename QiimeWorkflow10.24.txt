@@ -1,0 +1,16 @@
+srun --time=00:30:00 --ntasks=16 --nodes=1 --partition=kbs \
+qiime quality-filter q-score-joined \
+    --i-demux /home/j725k763/work/sequences.qza \
+    --p-min-quality 20 \
+    -o-filtered-sequences Q20FilteredSeqs.qza \
+    --o-filter-stats Q20Filteredstats.qza
+
+#The above didn't work because it wanted the reads to be joined. I'm going to stick with dad2
+srun --time=00:30:00 --ntasks=16 --mem=4gb --nodes=1 --partition=kbs \
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs /home/j725k763/work/sequences.qza \
+  --p-trunc-len-f 260 \
+  --p-trunc-len-r 260 \
+  --o-representative-sequences /home/j725k763/work/RepSeqf300r260dada10.24.qza \
+  --o-table /home/j725k763/work/table-f300r260dada10.24.qza \
+  --o-denoising-stats /home/j725k763/work/stats-f300r260dada10.24.qza
