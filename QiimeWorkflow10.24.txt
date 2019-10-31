@@ -19,7 +19,21 @@ qiime dada2 denoise-paired \
   --o-table /home/j725k763/work/table-f300r260dada10.24.qza \
   --o-denoising-stats /home/j725k763/work/stats-f300r260dada10.24.qza
 
-An error was encountered while running DADA2 in R (return code -9), please inspect stdout and stderr to learn more.
+#I was able to get the dada2 to run on the cluster by bumping up the memory and the time. 
+#This is multitasked-able and should be run with a higher thread count in the future
 
-Debug info has been saved to /tmp/qiime2-q2cli-err-fh5wrm91.log
-Plugin error from dada2:
+#visualizing dada2 stuff
+  srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
+  qiime metadata tabulate \
+  --m-input-file /home/j725k763/work/stats-f300r260dada10.24.qza \
+  --o-visualization /home/j725k763/work/stats-f300r260dada10.24.qzv\
+  qiime feature-table summarize \
+  --i-table /home/j725k763/work/table-f300r260dada10.24.qza\
+  --o-visualization /home/j725k763/work/table-f300r260dada10.24.qzv\
+  --m-sample-metadata-file 
+srun --time=00:30:00 --ntasks=1 --nodes=1 --mem=5gb --partition=kbs \
+qiime quality-filter q-score-joined \
+  --i-demux /home/j725k763/work/RepSeqf300r260dada10.24.qza \
+  --p-min-quality 30 \
+  --o-filtered-sequences /home/j725k763/work/repseq10.24q30.qza \
+  --o-filter-stats  /home/j725k763/work/stats-repseq10.24q30.qza

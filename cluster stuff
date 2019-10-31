@@ -129,3 +129,5 @@ qiime taxa barplot \
   qiime demux summarize \
   --i-data /home/j725k763/work/sequences.qza \
   --o-visualization /home/j725k763/work/sequences.qzv
+
+srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \

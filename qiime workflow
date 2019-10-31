@@ -30,10 +30,6 @@ go with dada2
   #Couldn't get it to work, so lets try deblur. This is just an importing step though.
   #deblur worked!
 
-  qiime quality-filter q-score \
- --i-demux sequences.qza \
- --o-filtered-sequences demux-filtered.qza \
- --o-filter-stats demux-filter-stats.qza
 
 #visualize stats
   qiime metadata tabulate \

@@ -1,0 +1,22 @@
+sample id	extraction date	species name	body_site	microbe type	genus	family	Category of frog	species island	Location	Elevation
+#q2:types	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical
+25594-GB-VS    	5_31	Fejervarya vittigera	Gut 	Bacteria	Dicroglossidae	Fejervarya	flood plain species	Luzon Island	Bicol penin.	110
+25594-SB-VS    	6_4	Fejervarya vittigera	Skin	Bacteria	Dicroglossidae	Fejervarya	flood plain species	Luzon Island	Bicol penin.	110
+25363-GB-VS     	4_23	Kaloula walteri	Gut 	Bacteria	Microhylidae	Kaloula	dry stream frog	Luzon Island	Bicol penin.	165
+25363-SB-VS    	4_23	Kaloula walteri	Skin	Bacteria	Microhylidae	Kaloula	dry stream frog	Luzon Island	Bicol penin.	165
+25606-GB-VS     	5_23	Limnonectes macrocephalus	Gut 	Bacteria	Dicroglossidae	Limnonectes	river frog	Luzon Island	Bicol penin.	152
+25606-SB-VS     	5_23	Limnonectes macrocephalus	Skin	Bacteria	Dicroglossidae	Limnonectes	river frog	Luzon Island	Bicol penin.	152
+25352-GB-VS     	5_23	Limnonectes woodworthi	Gut 	Bacteria	Dicroglossidae 	Limnonectes	swamp frog	Luzon Island	Bicol penin.	165
+25352-SB-VS     	5_23	Limnonectes woodworthi	Skin	Bacteria	Dicroglossidae 	Limnonectes	swamp frog	Luzon Island	Bicol penin.	165
+25361-GB-VS     	5_31	Occidozyga laevis	Gut 	Bacteria	Dicroglossidae	Occidozyga	puddle frog	Luzon Island	Bicol penin.	165
+25361-SB-VS     	6_4	Occidozyga laevis	Skin	Bacteria	Dicroglossidae	Occidozyga	puddle frog	Luzon Island	Bicol penin.	165
+25486-GB-VS     	5_31	Platymantis corrugatus	Gut 	Bacteria	Ceratobatrichidae	Platymantis	litter frog	Luzon Island	Bicol penin.	649
+25486-SB-VS    	6_4	Platymantis corrugatus	Skin	Bacteria	Ceratobatrichidae	Platymantis	litter frog	Luzon Island	Bicol penin.	649
+25411-GB-VS     	3_26	Platymantis dorsalis	Gut 	Bacteria	Ceratobatrichidae	Platymantis	litter frog	Luzon Island	Bicol penin.	165
+25411-SB-VS     	4_2	Platymantis dorsalis	Skin	Bacteria	Ceratobatrichidae	Platymantis	litter frog	Luzon Island	Bicol penin.	165
+25544-GB-VS    	5_10	Pulchrana similis 	Gut 	Bacteria	Ranidae	Pulchrana	stream frog	Luzon Island	Bicol penin.	467
+25544-SB-VS     	5_10	Pulchrana similis 	Skin	Bacteria	Ranidae	Pulchrana	stream frog	Luzon Island	Bicol penin.	467
+25518-GB-VS    	5_10	Rhacophorus bimaculatus	Gut 	Bacteria	Rhacophoridae	Rhacophorus	spray zone tree frog	Luzon Island	Bicol penin.	467
+25518-SB-VS    	5_10	Rhacophorus bimaculatus	Skin	Bacteria	Rhacophoridae	Rhacophorus	spray zone tree frog	Luzon Island	Bicol penin.	467
+25356-GB-VS     	5_23	Sanguirana luzonensis	Gut 	Bacteria	Ranidae	Sanguirana	stream frog	Luzon Island	Bicol penin.	165
+25356-SB-VS    	5_23	Sanguirana luzonensis	Skin	Bacteria	Ranidae	Sanguirana	stream frog	Luzon Island	Bicol penin.	165
