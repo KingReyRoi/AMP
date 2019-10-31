@@ -1,4 +1,4 @@
-srun --time=00:30:00 --ntasks=16 --nodes=1 --partition=kbs \
+srun --time=01:00:00 --ntasks=16 --mem=10gb --nodes=1 --partition=kbs \
 qiime quality-filter q-score-joined \
     --i-demux /home/j725k763/work/sequences.qza \
     --p-min-quality 20 \
@@ -7,6 +7,10 @@ qiime quality-filter q-score-joined \
 
 #The above didn't work because it wanted the reads to be joined. I'm going to stick with dad2
 srun --time=00:30:00 --ntasks=16 --mem=4gb --nodes=1 --partition=kbs \
+
+
+
+srun --time=01:00:00 --ntasks=1 --mem=20gb --nodes=1 --partition=kbs \
 qiime dada2 denoise-paired \
   --i-demultiplexed-seqs /home/j725k763/work/sequences.qza \
   --p-trunc-len-f 260 \
@@ -14,3 +18,8 @@ qiime dada2 denoise-paired \
   --o-representative-sequences /home/j725k763/work/RepSeqf300r260dada10.24.qza \
   --o-table /home/j725k763/work/table-f300r260dada10.24.qza \
   --o-denoising-stats /home/j725k763/work/stats-f300r260dada10.24.qza
+
+An error was encountered while running DADA2 in R (return code -9), please inspect stdout and stderr to learn more.
+
+Debug info has been saved to /tmp/qiime2-q2cli-err-fh5wrm91.log
+Plugin error from dada2:
