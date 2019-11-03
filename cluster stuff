@@ -21,15 +21,15 @@
   #SBATCH --mem=2gb                     # Job memory request
   #SBATCH --time=0-03:00:00             # Time limit days-he.qza   # Standard output and error log
 
-  #!/bin/bash
-  #SBATCH --job-name=CoreMetrics  
-  #SBATCH --partition=kbs          
-  #SBATCH --mail-type=END,FAIL          
-  #SBATCH --mail-user=j725k763@ku.edu     
-  #SBATCH --ntasks=3                    
-  #SBATCH --mem=4GB                     
-  #SBATCH --time=0-00:40:00             
-  #SBATCH --output=qiime2.log
+#!/bin/bash
+#SBATCH --job-name=CoreMetrics  
+#SBATCH --partition=kbs          
+#SBATCH --mail-type=END,FAIL          
+#SBATCH --mail-user=j725k763@ku.edu     
+#SBATCH --ntasks=1                    
+#SBATCH --mem=4GB                     
+#SBATCH --time=0-00:40:00             
+#SBATCH --output=qiime2.log
 
   module load qiime2/2019.7 \
 
@@ -131,3 +131,31 @@ qiime taxa barplot \
   --o-visualization /home/j725k763/work/sequences.qzv
 
 srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
+
+#script for taxa
+  #!/bin/bash
+  #SBATCH --job-name=Taxa
+  #SBATCH --partition=kbs
+  #SBATCH --mail-type=END,FAIL
+  #SBATCH --mail-user=j725k763@ku.edu
+  #SBATCH --ntasks=2
+  #SBATCH --mem=20GB
+  #SBATCH --time=03:00:00
+  #SBATCH --output=Taxa.log
+
+  module load qiime2/2019.7
+
+  qiime feature-classifier classify-sklearn \
+  --i-classifier /home/j725k763/work/taxonomy/classifier.qza \
+  --i-reads /home/j725k763/work/RepSeqf300r260dada.10.24.qza \
+  --o-classification /home/j725k763/work/Taxf300r260.qza \
+
+  qiime metadata tabluate \
+  --m-input-file /home/j725k763/work/Taxf300r260.qza \
+  --o-visualization /home/j725k763/work/Tax300r260.qzv\
+
+  qiime taxa barplot \
+  --i-table /home/j725k763/work/table-f300r260dada10.24.qza \
+  --i-taxonomy /home/j725k763/work/Taxf300r260.qza \
+  --m-metadata-file /home/j725k763/work/BacterialMetadata10.24.tsv \
+  --o-visualization /home/j725k763/work/TaxaBarPlotf300r260.qzv

@@ -9,18 +9,18 @@ qiime quality-filter q-score-joined \
 srun --time=00:30:00 --ntasks=16 --mem=4gb --nodes=1 --partition=kbs \
 
 
+#I was able to get the dada2 to run on the cluster by bumping up the memory and the time. 
+#This is multitasked-able and should be run with a higher thread count in the future
 
-srun --time=01:00:00 --ntasks=1 --mem=20gb --nodes=1 --partition=kbs \
+#writing a script to try out multiple different parameters for dada2 to compare
 qiime dada2 denoise-paired \
   --i-demultiplexed-seqs /home/j725k763/work/sequences.qza \
   --p-trunc-len-f 260 \
-  --p-trunc-len-r 260 \
+  --p-trunc-len-r 300 \
   --o-representative-sequences /home/j725k763/work/RepSeqf300r260dada10.24.qza \
   --o-table /home/j725k763/work/table-f300r260dada10.24.qza \
   --o-denoising-stats /home/j725k763/work/stats-f300r260dada10.24.qza
 
-#I was able to get the dada2 to run on the cluster by bumping up the memory and the time. 
-#This is multitasked-able and should be run with a higher thread count in the future
 
 #visualizing dada2 stuff
   srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
@@ -30,10 +30,27 @@ qiime dada2 denoise-paired \
   qiime feature-table summarize \
   --i-table /home/j725k763/work/table-f300r260dada10.24.qza\
   --o-visualization /home/j725k763/work/table-f300r260dada10.24.qzv\
-  --m-sample-metadata-file 
-srun --time=00:30:00 --ntasks=1 --nodes=1 --mem=5gb --partition=kbs \
-qiime quality-filter q-score-joined \
-  --i-demux /home/j725k763/work/RepSeqf300r260dada10.24.qza \
-  --p-min-quality 30 \
-  --o-filtered-sequences /home/j725k763/work/repseq10.24q30.qza \
-  --o-filter-stats  /home/j725k763/work/stats-repseq10.24q30.qza
+  --m-sample-metadata-file /home/j725k763/work/BacterialMetadata10.24.tsv
+  qiime feature-table tabulate-seqs \
+  --i-data /home/j725k763/work/RepSeqf300r260dada10.24.qza \
+  --o-visualization /home/j725k763/work/RepSeqf300r260.qzv
+
+#Create phylogeny tree
+  qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences /home/j725k763/home/RepSeqf300r260dada10.24.qza \
+  --p-n-threads 0 \
+  --o-alignment /home/j725k763/home/SeqAlignedf300r260.qza \
+  --o-masked-alignment /home/j725k763/home/SeqMaskedAlignedf300r260.qza \
+  --o-tree /home/j725k763/home/Treef300r260.qza \
+  --o-rooted-tree /home/j725k763/home/TreeRootf300r260.qza \
+
+#Importing fungal seqs into qiime
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path /home/j725k763/work/Amphib_RawData_Fungi/ \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path SeqFungal.qza \
+  
+  qiime demux summarize \
+  --i-data /home/work/j725k763/SeqFungal.qza \
+  --o-visualization /home/work/j725k763/SeqFungal.qzv
