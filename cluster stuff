@@ -159,3 +159,23 @@ srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
   --i-taxonomy /home/j725k763/work/Taxf300r260.qza \
   --m-metadata-file /home/j725k763/work/BacterialMetadata10.24.tsv \
   --o-visualization /home/j725k763/work/TaxaBarPlotf300r260.qzv
+
+#Emperor custom plots
+
+  #!/bin/bash
+  #SBATCH --job-name=Emperor plot
+  #SBATCH --partition=kbs          
+  #SBATCH --mail-type=END,FAIL          
+  #SBATCH --mail-user=j725k763@ku.edu     
+  #SBATCH --ntasks=1                    
+  #SBATCH --mem=4GB                     
+  #SBATCH --time=0-00:20:00             
+  #SBATCH --output=emperorplot.log
+
+  module load qiime2/2019.7 \
+  qiime emperor plot \
+  --i-pcoa /home/j725k763/work/core-metrics-results-bf300r260/unweighted_unifrac_pcoa_results.qza \
+  --m-metadata-file /home/j725k763/work/Collective_Metadata10.24.tsv
+  --p-custom-axes "body_site", "species name", "extraction date", "family", "genus", "Category of frog" \
+  --o-visualization bf300r260PCOA.qzv
+      #The issue with this is that the axes need to be numeric, not catergorical.

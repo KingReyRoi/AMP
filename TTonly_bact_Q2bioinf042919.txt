@@ -1,0 +1,550 @@
+############################
+## Benjamin A. Sikes
+## Qiime 2 Bioinformatics Pipeline
+## Processing Illumina MiSeq Raw Data to OTU Table
+## Project: Tall Timbers Bacteria
+## 03/15/2019
+############################
+
+# Section 1: Working on the Cluster
+
+## 1.1 Use the SCREEN command 
+	#Notes: screen allows you to open and work in multiple instances simulatenously, stop working with active interactive processes, and many other things. All commands start with Ctrl-A. Look up how it works online as needed.
+	
+	screen
+
+## 1.2 Getting around in the command line; using the cluster.
+	
+	#The biggest impediment for most people is just learning how to work in the cluster environment. This includes learning the command line functions that make the HPC do want you want. There are basic UNIX and LINUX tutorials that are really handy here:
+	
+	http://korflab.ucdavis.edu/unix_and_perl/
+	
+	#There are also KU-specific resources about our cluster that include a huge amount of information on how our cluster is structured, how to carry out basic functions, and who to contact when you have (significant) issues. I would be remiss if I didn't add that the CRC staff are amazing, but limited. If you are a new user, try asking colleagues first and look through the introductory material before asking CRC. As awesome as they are, we should use their help sparingly!
+	
+	https://crc.ku.edu/
+
+	## 1.3 Using resources wisely
+	#Notes: You should NOT work off the head node for anything other than navigating to directories and checking files
+	
+	# Some commands below can be run off a minimal amount of resources in an interactive state. However, for the more computationally intensive steps, you should submit a job script to request resources and run qiime functions. I have detailed job scripts below.#
+	
+	##For a lot of work, you can specify to use the "sixhour" queue, which pulls available nodes from the whole cluster BUT can only be run for a maximum of 6 hours. KBS also has 4 of its own nodes including 2 high memory nodes. Use these sparingly when you have need for lots of resources or need them for longer than 6 hours. Not sure how much resources you'll need? Ask Ben or colleagues that have run the scripts before.
+	
+	# A simple request for general cluster resources more than the head node would be:
+	
+	srun -p sixhour -N 1 -n 4 --mem 64gb -t 5:00:00 --pty /bin/bash
+		
+	#This command essentially asks the cluster to partition you off a "computer" with 4 cores and 16GB of RAM, much like you a solid desktop.
+	
+	#The basic headers for many of your job scripts will look similar to this:
+	
+	#!/bin/bash
+	#SBATCH -job-name=taco.tuesday			#Job name
+	#SBATCH -partition=kbs,eeb				#Partition Name (required)
+	#SBATCH -mail-type=BEGIN,END,FAIL		#Mail events
+	#SBATCH -mail-user=ben.sikes@ku.edu		#E-mail
+	#SBATCH -ntasks_per_node=20 			#Run 20 tasks (aka processor)- Parallel to ppn nodes
+	#SBATCH -mem=350GB
+	#SBATCH -time=05:00:00					#Time limit
+	#SBATCH --export=NONE
+	#SBATCH --output tt.log
+		
+ 	module load python/3.6
+ 
+	echo "Running python script"
+ 
+	python $WORK/working/FireFun_comb/serial.py
+
+## 1.4 How are my resources being used?
+		
+		mynodes
+		
+		mystats
+		
+		#more detail on how all the KBS nodes are being used currently:
+		
+		HEADER="$(squeue -w n140 -o "%.10i %.9P %.8u %.8T %.11M %.11l %.6D %4C %.8c %10m %R" | head -n1)"; echo "$HEADER"; for i in $(sinfo -p sjmac -N -o %N | grep -v NODELIST); do echo "$i - $(sinfo -h -n $i -o "%m - %C")"; squeue -h -w $i -o "%.10i %.9P %.8u %.8T %.11M %.11l %.6D %4C %.8c %10m %R"; done
+		
+		#look up individual usernames for details
+		
+		 getent passwd s057g121
+		 
+		 id s057g121
+
+# Section 2: Using Qiime to split libraries
+		#Not needed if files are already demultiplexed!
+
+## In this case and others, we have run two smaler projects on the same run to better optimize resources. Because of this, first steps involve identifying barcodes for each run, then splitting up the samples to each individual project. ##
+
+	## 2.1 Extracting barcodes
+	#Start by extracting barcodes from smaller two files .fastq files (I1 and I2) from the MiSeq Run
+		#Requires: I1 and I2 .fastq files
+	
+	extract_barcodes.py -f  /rfs/sikes/raw_data/TT_SIU_bact/TTSIU_bact_S0_L001_I1_001.fastq -r /rfs/sikes/raw_data/TT_SIU_bact/TTSIU_bact_S0_L001_I1_001.fastq -c barcode_paired_end --bc1_len 8 --bc2_len 8 -o $WORK/working/Fire2016/Litter/processed_pair_seqs12
+		#Creates: barcodes.fastq and two read files: reads1.fastq & reads2.fastq
+	
+	## 2.2 Check Mapping Files for Tall Timbers only data
+		#Requires: mapping file
+	
+	#Forward mapping file
+			
+	validate_mapping_file.py -m $WORK/working/TTSIU/TTSIU_bact/TTbactQ1/TTonly_Fmap_bact.txt -o mapcheckTTonlyF
+		#Creates: mapcheck folder: log and corrected mapping file if errors	
+
+	# Reverse Mapping File
+	$WORK/working/TTSIU/TTSIU_bact/TTbactQ1/TTonly_Rmap_bact.txt -o mapcheckTTonlyR
+
+	## 2.3 Demultiplex forward reads using split_libraries command
+		#Requires: F.fastq, mapping file, barcodes.fastq
+		
+	split_libraries_fastq.py -i $WORK/working/TTSIU/TTSIU_bact/Undetermined_S0_L001_R1_001.fastq -b	$WORK/working/TTSIU/TTSIU_bact/processed_pair_seqs12/barcodes.fastq -m $WORK/working/TTSIU/TTSIU_bact/TTSIU_Fmap_bact.txt -o	$WORK/working/TTSIU/TTSIU_bact/splitF/ -q 29 --max_barcode_errors 1 --barcode_type 16
+		#Creates: histograms.txt, seqs.fna, and split_library_log.txt
+
+	# Reverse split libraries
+	split_libraries_fastq.py -i $WORK/working/TTSIU/TTSIU_bact/Undetermined_S0_L001_R2_001.fastq -b	$WORK/working/TTSIU/TTSIU_bact/processed_pair_seqs12/barcodes.fastq -m $WORK/working/TTSIU/TTSIU_bact/TTSIU_Rmap_bact.txt -o	$WORK/working/TTSIU/TTSIU_bact/splitR/ -q 29 --max_barcode_errors 1 --barcode_type 16
+			
+
+	#Instead Use Job Script! 
+	
+	vim TTSIUbact_splitF.sh
+	
+		#!/bin/bash
+		#SBATCH --job-name=TTSIU_splitF         #Job name
+		#SBATCH --partition=sixhour             #Partition Name (required)
+		#SBATCH --mail-type=BEGIN,END,FAIL      #Mail events
+		#SBATCH --mail-user=ben.sikes@ku.edu    #E-mail
+		#SBATCH --ntasks=1                      #processors
+		#SBATCH --mem=4GB
+		#SBATCH --time=05:59:00                 #Time limit
+		#SBATCH --export=NONE
+		#SBATCH --output TTSIU_splitF.log
+
+		#Load needed modules for script
+		module load qiime/1.9.1
+
+		#Create needed output directories
+		mkdir $WORK/working/TTSIU/TTSIU_bact/splitF/
+
+		# Put your Science related commands here
+		split_libraries_fastq.py -i $WORK/working/TTSIU/TTSIU_bact/Undetermined_S0_L001_R1_001.fastq -b         $WORK/working/TTSIU/TTSIU_bact/processed_pair_seqs12/barcodes.fastq -m $WORK/working/TTSIU/TTSIU_bact/TTSIU_Fmap_bact.txt -o $WORK/working/TTSIU/TTSIU_bact/splitF/ -q 19 --max_barcode_errors 1 --barcode_type 16 --store_demultiplexed_fastq
+		
+	:wq!	# to save and exit vim
+	
+	sbatch TTSIUbact_splitF.sh
+	#to submit
+		_________________
+		
+	#Reverse library
+	$WORK/working/Fire2016/Litter/Undetermined_S0_L001_R2_001.fastq -b	$WORK/working/Fire2016/Litter/processed_pair_seqs12/barcodes.fastq -m $WORK/working/Fire2016/Litter/FF2016_Litter_MapR.txt -o	$WORK/working/Fire2016/Litter/FF16Litter_splitR/ -q 29 --max_barcode_errors 1 --barcode_type 16
+
+		
+# Section 3: Working in Qiime
+	#Notes: In nearly all cases below, the file path and names are specific for my data. THESE MUST BE CHANGED to reflect the path and data where your files are. I have not anonymized them. Full path names are always preferable. ####
+
+	#Ask for resources
+	srun -p sixhour -N 1 -n 4 --mem 64gb -t 5:00:00 --pty /bin/bash
+	
+	#Load Qiime2
+	module load qiime2/2018.11
+	
+## 3.1 Importing files into Qiime and creating a .qza file
+	
+	#Bring in data (note this is specific for demupliplexed data from Qiime1)
+	
+	qiime tools import --input-path seqs.fna --output-path seqs.qza --type 'SampleData[Sequences]'
+	
+	#Output artifacts:
+       #seqs.qza
+
+
+	
+	
+# 3.2 Dereplicate data with Vsearch
+	
+	#After importing data, you can dereplicate it with the dereplicate-sequences command.
+
+	qiime vsearch dereplicate-sequences \
+	  --i-sequences seqs.qza \
+	  --o-dereplicated-table table.qza \
+	  --o-dereplicated-sequences rep-seqs.qza
+	  
+	  
+	#Output artifacts:
+		rep-seqs.qza
+		table.qza
+	  
+#3.3 Open-reference clustering
+	#Clustering of FeatureTable[Frequency] and FeatureData[Sequence]
+
+	#OTU clustering in QIIME 2 is currently applied to a FeatureTable[Frequency] artifact and a FeatureData[Sequence] artifact. These artifacts can come from a variety of analysis pipelines, including qiime vsearch dereplicate-sequences (illustrated above), qiime dada2 denoise-*, qiime deblur denoise-*, or one of the clustering processes illustrated below (for example, to recluster data at a lower percent identity).
+
+	#The sequences in the FeatureData[Sequence] artifact are clustered against one another (in de novo clustering) or a reference database (in closed-reference clustering), and then features in the FeatureTable are collapsed, resulting in new features that are clusters of the input features.
+	
+	#Like the closed-reference, open-reference clustering can be performed using the qiime vsearch cluster-features-open-reference command.
+
+	qiime vsearch cluster-features-open-reference \
+	  --i-table table.qza \
+	  --i-sequences rep-seqs.qza \
+	  --i-reference-sequences $WORK/working/MAPS/SoilBac/silva-132-99-515-806-nb-classifier.qza \
+	  --p-perc-identity 0.97 \
+	  --o-clustered-table table-or-97.qza \
+	  --o-clustered-sequences rep-seqs-or-97.qza \
+	  --o-new-reference-sequences new-ref-seqs-or-97.qza
+
+	#Do it in a script!
+	
+	vim Q2.clust.sh
+	
+		#!/bin/bash
+		#SBATCH --job-name=Q2.clust              #Job name
+		#SBATCH --partition=kbs                 #Partition Name (required)
+		#SBATCH --mail-type=BEGIN,END,FAIL      #Mail events
+		#SBATCH --mail-user=ben.sikes@ku.edu    #E-mail
+		#SBATCH --ntasks=40                     #processors
+		#SBATCH --mem=50GB                      #memory
+		#SBATCH --time=24:59:00                 #Time limit
+		#SBATCH --export=NONE
+		#SBATCH --output Q2.clust.log            #Log file name
+
+		module load qiime2/2018.11
+
+		qiime vsearch cluster-features-open-reference \
+	  --i-table table.qza \
+	  --i-sequences rep-seqs.qza \
+	  --i-reference-sequences  \
+	  --p-perc-identity 0.97 \
+	  --o-clustered-table table-or-97.qza \
+	  --o-clustered-sequences rep-seqs-or-97.qza \
+	  --o-new-reference-sequences new-ref-seqs-or-97.qza \
+	  --p-threads 40
+	
+	sbatch Q2.clust.sh
+	
+	Output artifacts:
+
+		new-ref-seqs-or-97.qza
+		rep-seqs-or-97.qza
+		table-or-97.qza
+
+	#The outputs from cluster-features-open-reference are a FeatureTable[Frequency] artifact and two FeatureData[Sequence] artifacts. One of the FeatureData[Sequence] artifacts represents the clustered sequences, while the other artifact represents the new reference sequences, composed of the reference sequences used for input, as well as the sequences clustered as part of the internal de novo clustering step.
+
+
+## 3.2 Summarize and visualize data
+	qiime demux summarize --i-data seqs.qza --o-visualization demux.qzv
+	
+	#Output artifacts:
+		#demux-paired-end.qza
+	
+	#Output visualizations
+		# demux.qzv
+	
+	## With .qzv outputs like this, you must copy them over to your computer, and open in www.view.qiime2.org
+
+## 3.3 Sequence quality and denoising
+	vim Q2.deno.sh
+	
+		#!/bin/bash
+		#SBATCH --job-name=Q2.deno              #Job name
+		#SBATCH --partition=kbs                 #Partition Name (required)
+		#SBATCH --mail-type=BEGIN,END,FAIL      #Mail events
+		#SBATCH --mail-user=ben.sikes@ku.edu    #E-mail
+		#SBATCH --ntasks=40                     #processors
+		#SBATCH --mem=50GB                      #memory
+		#SBATCH --time=24:59:00                 #Time limit
+		#SBATCH --export=NONE
+		#SBATCH --output Q2.deno.log            #Log file name
+
+		module load qiime2/2018.11
+
+		qiime dada2 denoise-paired --i-demultiplexed-seqs demux-paired-end.qza --p-trim-left-f 13  --p-trim-left-r 13 --p-trunc-len-f 260 --p-trunc-len-r 220 --o-table table.qza  --o-representative-sequences rep-seqs.qza --o-denoising-stats denoising-stats.qza --p-n-threads 40
+	
+	sbatch Q2.deno.sh
+	
+	#Output artifacts:
+		# denoising-stats.qza
+		# rep-seqs.qza
+		# table.qza
+	
+	
+## 3.4 Generate summaries of each artifacts and other options with feature-table
+	
+	qiime feature-table summarize --i-table table.qza --o-visualization table.qzv  --m-sample-metadata-file SoilBac_Sp18_Fmap.tsv 
+
+	qiime feature-table tabulate-seqs --i-data rep-seqs.qza --o-visualization rep-seqs.qzv
+	
+	#Output visualizations:
+		#table.qzv
+		#rep-seqs.qzv
+	
+	#Visualize denoising stats
+	qiime metadata tabulate --m-input-file denoising-stats.qza --o-visualization denoising-stats.qzv
+	
+	#Output visualizations:
+		#denoising-stats.qzv
+		
+##3.4 more 
+	#There are a number of things you can do with the feature table. It is the core product of this pipeline. Below are more potential methods and visualizations you can do with this table.
+
+		Methods
+
+			filter-features: Filter features from table
+			filter-samples: Filter samples from table
+			filter-seqs: Filter features from sequences
+			group: Group samples or features by a metadata column
+			merge: Combine multiple tables
+			merge-seqs: Combine collections of feature sequences
+			merge-taxa: Combine collections of feature taxonomies
+			presence-absence: Convert to presence/absence
+			rarefy: Rarefy table
+			relative-frequency: Convert to relative frequencies
+			subsample: Subsample table
+			transpose: Transpose a feature table.
+
+		Visualizers
+
+			core-features: Identify core features in table
+			heatmap: Generate a heatmap representation of a feature table
+			summarize: Summarize table
+			tabulate-seqs: View sequence associated with each feature
+
+	
+	
+## 3.5 Clustering of feature data (only if desired)
+		#We can keep the data as ASVs, which is all unique sequences (i.e. clustered at 100%) and assign taxonomy later then group sequences based on the taxonomy. However, the older technique of clustering sequences at a particular threshold are possible if desired.
+		
+		# Here are details to perform open reference clustering. This allows the representative sequences to be matched first to a database of knowns, then form new clusters if they don't match any of these. 
+		# For the first time only, you need to take the reference database (from Greengenes, Silva, or UNITE (etc...) and turn it into a .qza file
+		
+		qiime tools import --input-path 99_otus.fasta --output-path ../99_otus.qza  --type 'FeatureData[Sequence]'
+		
+		# We 1st set the threshold at 97% sequence similarity (common convention). This can be changed to see how the outcome changes.
+		
+	vim Q2.clust.sh
+	
+		#!/bin/bash
+		#SBATCH --job-name=Q2.clust              #Job name
+		#SBATCH --partition=kbs                 #Partition Name (required)
+		#SBATCH --mail-type=BEGIN,END,FAIL      #Mail events
+		#SBATCH --mail-user=ben.sikes@ku.edu    #E-mail
+		#SBATCH --ntasks=40                     #processors
+		#SBATCH --mem=50GB                      #memory
+		#SBATCH --time=24:59:00                 #Time limit
+		#SBATCH --export=NONE
+		#SBATCH --output Q2.clust.log            #Log file name
+
+		module load qiime2/2018.11
+
+		qiime vsearch cluster-features-open-reference --i-table table.qza --i-sequences rep-seqs.qza --i-reference-sequences silva-132-99-515-806-nb-classifier.qza --p-perc-identity 0.97 --o-clustered-table table-or-97.qza --o-clustered-sequences rep-seqs-or-97.qza  --o-new-reference-sequences new-ref-seqs-or-97.qza --p-threads 40
+	
+	sbatch Q2.clust.sh
+	
+	qiime vsearch cluster-features-open-reference --i-table table.qza --i-sequences rep-seqs.qza --i-reference-sequences silva-132-99-515-806-nb-classifier.qza --p-perc-identity 0.97 --o-clustered-table table-or-97.qza --o-clustered-sequences rep-seqs-or-97.qza  --o-new-reference-sequences new-ref-seqs-or-97.qza --p-threads 40
+	
+	#Output artifacts:
+		# new-ref-seqs-or-97
+		# rep-seqs-or-97.qza
+		# table-or-97.qza
+		
+## 3.6 Taxonomy assignment
+		
+	#3.6.1 Import reference dataset
+	
+	# For this plant data, we need to first train the classifier to recognize the features in our dataset. Two elements are required: the reference sequences and the corresponding taxonomic classifications for each
+	#Note, this is very memory intensive so we will use the advantages of the cluster
+	
+	qiime tools import --type 'FeatureData[Sequence]' --input-path 85_otus.fasta --output-path 85_otus.qza
+
+	qiime tools import --type 'FeatureData[Taxonomy]' --input-format HeaderlessTSVTaxonomyFormat --input-path 99_otu_taxonomy.txt --output-path $WORK/working/MAPS/SoilBac/greengenes/99ref-taxonomy.qza
+	
+	#Output artifacts:
+		# 85_otus.qza
+		# rep-seqs.qza
+		# ref-taxonomy.qza
+
+	#3.6.2 Extract reference reads
+	
+	#Taxonomic classification accuracy of 16S rRNA gene sequences improves when a Naive Bayes classifier is trained on only the region of the target sequences that was sequenced. However this is not necessarily the case for other marker genes (i.e. Fungal ITS). We will need to check if this is the case for plant ITS. If needed here, we would optimize for that by extracting reads from the reference database based on matches to our primer pair, and then slice the result to the length we expect
+	
+	qiime feature-classifier extract-reads --i-sequences 99_otus.qza --p-f-primer GTGCCAGCMGCCGCGGTAA --p-r-primer GGACTACHVGGGTWTCTAAT --p-trunc-len 120 --p-min-length 100 --p-max-length 400 --o-reads ref-seqs.qza
+	
+	#Output artifacts:
+		# ref-seqs.qza
+	
+	#3.6.3 Train the classifer
+		#The second element here would either be rep-seqs.qza from 3.6.1 or ref-seqs from 3.6.2 depending on if extraction is needed to improve classification.
+		
+	qiime feature-classifier fit-classifier-naive-bayes  --i-reference-reads ref-seqs.qza --i-reference-taxonomy ref-taxonomy.qza --o-classifier classifier.qza
+	
+	#3.6.4 Use classifier to assign taxonomy
+	
+	qiime feature-classifier classify-sklearn --i-classifier silva-132-99-515-806-nb-classifier.qza --i-reads rep-seqs.qza --o-classification taxonomy.qza
+
+	qiime metadata tabulate --m-input-file taxonomy.qza  --o-visualization taxonomy.qzv
+	
+	#Output artifacts:
+		# taxonomy.qza
+		# gg-13-8-99-515-806-nb-classifier.qza
+
+	#Output visualizations:	
+		# taxonomy.qzv
+
+
+## 3.7 Explore taxonomy composition of samples
+
+	qiime taxa barplot --i-table table.qza --i-taxonomy taxonomy.qza --m-metadata-file SoilBac_Sp18_Fmap.tsv --o-visualization taxa-bar-plots.qzv
+
+	# Output visualizations:
+		# taxa-bar-plots.qzv
+
+## 3.8 Export table with taxonomy information
+
+	#3.8.1 First we need to export the feature table and the taxonomy file
+	
+	qiime tools export --input-path table.qza --output-path exported
+	qiime tools export --input-path taxonomy.qza --output-path exported
+	
+	#3.8.2 Changing the taxonomy file headers
+	
+	#Make copy of file
+	cp exported/taxonomy.tsv biom-taxonomy.tsv
+	
+	#Change the header line
+	vim biom-taxonomy.tsv
+	
+	# type "i" to insert, then add "#OTUID	taxonomy	confidence" to top line
+			
+	# hit Enter for carriage return; then ESC; then ":wq!" to save
+	
+	# 3.8.3 Add the taxonomy to biom file and convert to text
+	
+	biom add-metadata -i exported/feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp SoilBac_Sp18_Fmap.tsv --sc-separated taxonomy
+	
+	biom convert -i table-with-taxonomy.biom  -o table-with-taxonomy.txt  --to-tsv --table-type="OTU table" --header-key taxonomy
+
+### Analyses possible within Qiime2 if desired
+	
+## 3.9 Generate a phylogenetic tree for diversity analyses
+	
+	qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+	
+	Output artifacts:
+		#aligned-rep-seqs.qza
+		#masked-aligned-rep-seqs.qza
+		#rooted-tree.qza
+		#unrooted-tree.qza
+
+## 3.10 Alpha and beta diversity analyses
+	
+	#3.10.1 Create core alpha and beta diversity results
+	qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table.qza --p-sampling-depth 25000 --m-metadata-file SoilBac_Sp18_Fmap.tsv --output-dir core-metrics-results
+	
+	#Output artifacts:
+		#core-metrics-results/faith_pd_vector.qza
+		#core-metrics-results/unweighted_unifrac_distance_matrix.qza
+		#core-metrics-results/bray_curtis_pcoa_results.qza
+		#core-metrics-results/shannon_vector.qza
+		#core-metrics-results/rarefied_table.qza
+		#core-metrics-results/weighted_unifrac_distance_matrix.qza
+		#core-metrics-results/jaccard_pcoa_results.qza
+		#core-metrics-results/observed_otus_vector.qza
+		#core-metrics-results/weighted_unifrac_pcoa_results.qza
+		#core-metrics-results/jaccard_distance_matrix.qza
+		#core-metrics-results/evenness_vector.qza
+		#core-metrics-results/bray_curtis_distance_matrix.qza
+		#core-metrics-results/unweighted_unifrac_pcoa_results.qza
+		
+	#Output visualizations:
+		#core-metrics-results/unweighted_unifrac_emperor.qzv
+		#core-metrics-results/jaccard_emperor.qzv
+		#core-metrics-results/bray_curtis_emperor.qzv
+		#core-metrics-results/weighted_unifrac_emperor.qzv
+	
+	#3.10.2 Test for relationships between alpha diversity and metadata categories. Here we do that with Faith Phylogenetic Diversity (richness) and evenness
+	
+	qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+
+	qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization core-metrics-results/evenness-group-significance.qzv
+	
+	#Output visualizations:
+		# core-metrics-results/faith-pd-group-significance.qzv
+		# core-metrics-results/evenness-group-significance.qzv
+		
+	#These allow us to ask which metadata categories are associated with microbial community richness and evenness, as well as statistical significance.
+	
+	#3.10.3 PERMANOVA analyses to test for beta community differences based on a particular factor
+	
+	qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-column BodySite --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qza --p-pairwise
+
+	qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-column Subject --o-visualization core-metrics-results/unweighted-unifrac-subject-group-significance.qzv --p-pairwise
+	
+	# Output visualizations:
+		# core-metrics-results/unweighted-unifrac-body-site-significance.qzv
+		# core-metrics-results/unweighted-unifrac-subject-group-significance.qzv
+	
+	# Are the differences in pollen composition among bee species (or flowers from where they were captured) statistically significant?
+	
+	#3.10.4 Make plots of beta diversity differences
+	qiime emperor plot \
+  --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --p-custom-axes DaysSinceExperimentStart \
+  --o-visualization core-metrics-results/unweighted-unifrac-emperor-DaysSinceExperimentStart.qzv
+
+	qiime emperor plot \
+  --i-pcoa core-metrics-results/bray_curtis_pcoa_results.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --p-custom-axes DaysSinceExperimentStart \
+  --o-visualization core-metrics-results/bray-curtis-emperor-DaysSinceExperimentStart.qzv
+  
+  # Output visualizations:
+		#  core-metrics-results/unweighted-unifrac-emperor-DaysSinceExperimentStart.qzv
+		
+		# core-metrics-results/bray-curtis-emperor-DaysSinceExperimentStart.qzv
+		
+	#3.10.5 Alpha rarefaction plotting
+	
+	qiime diversity alpha-rarefaction --i-table table.qza --i-phylogeny rooted-tree.qza --p-max-depth 4000  --m-metadata-file sample-metadata.tsv --o-visualization alpha-rarefaction.qzv
+	
+	#Output visualizations:
+		# alpha-rarefaction.qzv
+	
+## 3.11 Differential abundance testing with ANCOM
+
+	#  ANCOM can be used to test for features (ASVs, OTUs, taxa) that are differntially abundant across sample groups
+	
+	# There are key assumptions though which may be violated in these pollen data. For right now, I think we won't do these. 
+	
+	qiime feature-table filter-samples \
+  --i-table table.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --p-where "BodySite='gut'" \
+  --o-filtered-table gut-table.qza
+  
+  # Output artifacts:
+		# gut-table.qza
+		
+		qiime composition add-pseudocount \
+  --i-table gut-table.qza \
+  --o-composition-table comp-gut-table.qza
+  
+  # Output artifacts:
+		# comp-gut-table.qza
+		
+		qiime composition ancom \
+  --i-table comp-gut-table.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column Subject \
+  --o-visualization ancom-Subject.qzv
+  
+  # Output visualizations:
+	# ancom-Subject.qzv
+  
+	#Ask for resources
+	srun -p sixhour -N 1 -n 4 --mem 64gb -t 5:00:00 --pty /bin/bash
+	
+	#Load Qiime2
+	module --ignore-cache load "qiime2/2019.1"
+ 
+	
+			
+	

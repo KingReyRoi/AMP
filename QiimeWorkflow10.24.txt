@@ -1,4 +1,5 @@
 srun --time=01:00:00 --ntasks=16 --mem=10gb --nodes=1 --partition=kbs \
+module load qiime2/2019.7
 qiime quality-filter q-score-joined \
     --i-demux /home/j725k763/work/sequences.qza \
     --p-min-quality 20 \
@@ -50,7 +51,31 @@ qiime tools import \
   --input-path /home/j725k763/work/Amphib_RawData_Fungi/ \
   --input-format CasavaOneEightSingleLanePerSampleDirFmt \
   --output-path SeqFungal.qza \
-  
+
   qiime demux summarize \
   --i-data /home/work/j725k763/SeqFungal.qza \
   --o-visualization /home/work/j725k763/SeqFungal.qzv
+
+#CoreMetricsBacteria
+  qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny /home/j725k763/work/TreeRootf300r260.qza\
+  --i-table /home/j725k763/work/table-f300r260dada10.24.qza \
+  --p-sampling-depth 3571 \
+  --m-metadata-file /home/j725k763/work/BactquitrialMetadata10.24.tsv \
+  --output-dir /home/j725k763/work/core-metrics-results
+#dada2 for Fungi
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs /home/j725k763/work/SeqFungal.qza \
+  --p-trunc-len-f 0 \
+  --p-trunc-len-r 0 \
+  --o-representative-sequences rep-seqs-dada2.qza \
+  --o-table table-dada2.qza \
+  --o-denoising-stats stats-dada2.qza
+
+#Emperor plot w/ custom axis
+srun --time=00:20:00 --ntasks=1 --mem=5gb --nodes=1 --partition=kbs \
+  qiime emperor plot \
+  --i-pcoa /home/j725k763/work/core-metrics-results-bf300r260/unweighted_unifrac_pcoa_results.qza \
+  --m-metadata-file /home/j725k763/work/Collective_Metadata10.24.tsv
+  --p-custom-axes "body_site", "species name", "extraction date", "family", "genus", "Category of frog" \
+  --o-visualization bf300r260PCOA.qzv

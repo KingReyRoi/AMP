@@ -32,9 +32,7 @@ go with dada2
 
 
 #visualize stats
-  qiime metadata tabulate \
-  --m-input-file demux-filter-stats.qza \
-  --o-visualization demux-filter-stats.qzv
+  
 
 
 #i'm not certain at what to trim, so i'ma go with 300
