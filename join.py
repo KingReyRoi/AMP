@@ -49,5 +49,17 @@ for frog in frog_species:
 
     present_bacteria[frog] = current_bacteria
 
-print(present_bacteria)
 
+output = []
+output.append(["bacteria"] + list(present_bacteria.keys()))
+for bacteria in frog_bacteria:
+    row = [bacteria]
+    for frog in present_bacteria:
+        row.append(present_bacteria[frog][bacteria])
+    output.append(row)
+
+print(output)
+
+with open("joined.csv", "w") as f:
+    ofile = csv.writer(f)
+    ofile.writerows(output)
