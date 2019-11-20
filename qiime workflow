@@ -111,13 +111,13 @@ qiime diversity core-metrics-phylogenetic \
   --input-format HeaderlessTSVTaxonomyFormat \
   --input-path /home/j725k763/work/SILVA_132_QIIME_release/taxonomy/16S_only/99/taxonomy_all_levels.txt  \
   --output-path /home/j725k763/work/ref-taxonomy.qza
-## primers! 
+## primers! (just the region that binds to DNA)
   515F - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG CCA GCM GCC GCG GTA A 3'
   806R - 5' GTC TCG TGG GCT CGG AGA TGT GTA TAA GAG ACA GGG ACT ACH VGG GTW TCT AAT 3'
 
-  ITS4 - 5' GTC TCG TGG GCT CGG AGA TGT GTA TAA GAG ACA GCC TSC 3CTTANTDA TAT GC 3'
-  ITS7 - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG ART CAT CGA ATC TTT G 3'
-
+  ITS4 - 5' TCCTCCGCTTATTGATATGC 3'
+  ITS7 - 5' TCG TCG GCA GCG TCA GAT GTG TAT AAG AGA CAG GTG AAT CAT CGA ATC TTT G 3'
+                  TGAATCATCGAATCTTTG
 #sequences were all 300 lengthed, so p-trunc-len = 300. I left p-max and min alone because I don't really know what they did. 
 #Primers are just biological, as that's what the qiime tutorial said to do. The above has the complete sequence, according to the bottle.
 

@@ -179,3 +179,23 @@ srun --time=00:30:00 --ntasks=1 --nodes=1 --partition=kbs \
   --p-custom-axes "body_site", "species name", "extraction date", "family", "genus", "Category of frog" \
   --o-visualization bf300r260PCOA.qzv
       #The issue with this is that the axes need to be numeric, not catergorical.
+
+
+#!/bin/bash
+#SBATCH --job-name=BetaDiversity 
+#SBATCH --partition=kbs          
+#SBATCH --mail-type=END,FAIL          
+#SBATCH --mail-user=j725k763@ku.edu     
+#SBATCH --ntasks=20                    
+#SBATCH --mem=20GB                     
+#SBATCH --time=0-02:00:00             
+#SBATCH --output=BetaDiv.log
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix /home/j725k763/work/core-metrics-results-bf300r260/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /home/j725k763/work/Collective_Metadata10.24.tsv \
+  --m-metadata-column "species name" \
+  --p-method permanova \
+  --p-permutations 999 \
+  --o-visualization /home/j725k763/work/unifrac-unweighted-species-beta-sig-bq25 \
+  --p-pairwise

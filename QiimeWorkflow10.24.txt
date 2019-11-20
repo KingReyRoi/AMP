@@ -79,3 +79,90 @@ srun --time=00:20:00 --ntasks=1 --mem=5gb --nodes=1 --partition=kbs \
   --m-metadata-file /home/j725k763/work/Collective_Metadata10.24.tsv
   --p-custom-axes "body_site", "species name", "extraction date", "family", "genus", "Category of frog" \
   --o-visualization bf300r260PCOA.qzv
+
+
+#Betagroup significance
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix /home/j725k763/work/core-metrics-results-bf300r260/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /home/j725k763/work/Collective_Metadata10.24.tsv \
+  --m-metadata-column "species name" \
+  --p-method permanova
+  --p-permutations 999
+  --o-visualization /home/j725k763/work/unifrac-weighted-species-beta-sig-bq25 \
+  --p-pairwise
+
+  #for Leodegard
+  qiime diversity beta-group-significance \
+  --i-distance-matrix /Users/King/Desktop/Sikes_research/qiime/core-metrics-results-bf300r260/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/metadata/Collective_Metadata10.24.tsv \
+  --m-metadata-column "species name" \
+  --p-method permanova \
+  --p-permutations 9999 \
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/unifrac-weighted-species-beta-sig-bq25.qzv \
+  --p-pairwise
+
+  qiime diversity beta-group-significance \
+  --i-distance-matrix /Users/King/Desktop/Sikes_research/qiime/core-metrics-results-bf300r260/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/metadata/Collective_Metadata10.24.tsv \
+  --m-metadata-column "Category of frog" \
+  --p-method permanova \
+  --p-permutations 999 \
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/unifrac-weighted-frog-type-beta-sig-bq25.qzv \
+  --p-pairwise
+
+  qiime diversity beta-group-significance \
+  --i-distance-matrix /Users/King/Desktop/Sikes_research/qiime/core-metrics-results-bf300r260/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/metadata/Collective_Metadata10.24.tsv \
+  --m-metadata-column "genus" \
+  --p-method permanova \
+  --p-permutations 999 \
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/unifrac-weighted-genus-beta-sig-bq25.qzv \
+  --p-pairwise
+
+  qiime diversity beta-group-significance \
+  --i-distance-matrix /Users/King/Desktop/Sikes_research/qiime/core-metrics-results-bf300r260/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /Users/King/Desktop/Sikes_research/qiime/metadata/Collective_Metadata10.24.tsv \
+  --m-metadata-column "family" \
+  --p-method permanova \
+  --p-permutations 999 \
+  --o-visualization /Users/King/Desktop/Sikes_research/qiime/1unifrac-weighted-family-beta-sig-bq25.qzv \
+  --p-pairwise
+
+#Fungal Taxonomy
+
+qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path /home/j725k763/work/developer/sh_refs_qiime_ver7_99_01.12.2017.fasta \
+  --output-path /home/j725k763/work/99_fungal_otus.qza \
+
+  qiime tools import \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format HeaderlessTSVTaxonomyFormat \
+  --input-path /home/j725k763/work/developer/sh_taxonomy_qiime_ver7_99_01.12.2017.txt \
+  --output-path /home/j725k763/work/99_fung-ref-taxonomy.qza
+
+qiime feature-classifier extract-reads \
+  --i-sequences /home/j725k763/work/99_fungal_otus.qza \
+  --p-f-primer TCCTCCGCTTATTGATATGC \
+  --p-r-primer  TGAATCATCGAATCTTTG\
+  --p-trunc-len 175 \
+  --p-min-length 175 \
+  --p-max-length 318 \
+  --o-reads /home/j725k763/work/fung-ref-seqs.qza
+
+qiime feature-classifier fit-classifier-naive-bayes \
+  --i-reference-reads /home/j725k763/work/fung-ref-seqs.qza \
+  --i-reference-taxonomy /home/j725k763/work/99_fung-ref-taxonomy.qza \
+  --o-classifier /home/j725k763/work/fung-classifier.qza \
+
+qiime feature-classifier classify-sklearn \
+  --i-classifier /home/j725k763/work/fung-classifier.qza \
+  --i-reads /home/j725k763/work/Viktoria/fungalq30rep-seqs2.qza \
+  --o-classification /home/j725k763/work/fung-taxonomy.qza \
+
+  qiime metadata tabulate \
+  --m-input-file /home/j725k763/work/fung-taxonomy.qza \
+  --o-visualization /home/j725k763/work/fung-taxonomy.qzv
+
+
